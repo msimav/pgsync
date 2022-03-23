@@ -139,7 +139,12 @@ module PgSync
           if opts[:preserve]
             "NOTHING"
           else # overwrite or sql clause
-            setter = shared_fields.reject { |f| primary_key.include?(f) }.map { |f| "#{quote_ident(f)} = EXCLUDED.#{quote_ident(f)}" }
+            setter = shared_fields.reject { |f| primary_key.include?(f) }
+              .reject { |f|
+                rule = bad_fields.to_a.find { |bf, _| rule_match?(table, f, bf) }
+                rule and rule[1] == "untouched"
+              }
+              .map { |f| "#{quote_ident(f)} = EXCLUDED.#{quote_ident(f)}" }
             if setter.any?
               "UPDATE SET #{setter.join(", ")}"
             else
