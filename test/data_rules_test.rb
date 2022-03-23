@@ -31,6 +31,27 @@ class DataRulesTest < Minitest::Test
     assert_equal "rock", row["untouchable"]
   end
 
+  def test_untouchable_on_update
+    # User #2 exists on destination database with slightly different data
+    insert(conn2, "Users", [{
+      "email" => "hi@example.org",
+      "phone" => "555-555-5555",
+      "token" => "token123",
+      "attempts" => 1,
+      "created_on" => Date.today,
+      "updated_at" => Time.now,
+      "ip" => "1.1.1.1",
+      "name" => "Hi",
+      "nonsense" => "Text",
+      "untouchable" => "paper" # This value should be preserved
+    }])
+
+    assert_works "Users --overwrite", config: true
+    result = conn2.exec("SELECT * FROM \"Users\"").to_a
+    row = result.first
+    assert_equal "paper", row["untouchable"]
+  end
+
   def test_no_rules
     assert_works "Users --no-rules", config: true
     result = conn2.exec("SELECT * FROM \"Users\"").to_a

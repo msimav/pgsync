@@ -13,6 +13,7 @@ exclude:
   - excluded
   - does_not_exist
 data_rules:
+  untouchable: untouched
   email: unique_email
   phone: unique_phone
   token: unique_secret
